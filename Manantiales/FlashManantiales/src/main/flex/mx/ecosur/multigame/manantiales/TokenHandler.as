@@ -277,7 +277,7 @@ import flash.events.MouseEvent;
             if (_isMoving)
                 return;
 
-            if ((_mode == Mode.COMPETITIVE || _mode == Mode.SILVOPASTORAL) && !isTurn())
+            if (!isTurn())
                 return;
 
             // initialize drag source

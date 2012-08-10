@@ -1,10 +1,9 @@
 /**
- * Tests for moves in Manantiales. Covers all types, but not all moves, possible.
+ * Tests for Manantiales.
  *
- * Originally written to debug duplicate move problem detected in MG-116
- *
- * @author awaterma@ecosur.mx
+ * These tests confirm various types of fucntionality for Suggestions.
  */
+
 import com.mockrunner.ejb.EJBTestModule;
 import com.mockrunner.jms.JMSTestCaseAdapter;
 import com.mockrunner.mock.jms.MockTopic;
@@ -17,10 +16,10 @@ import mx.ecosur.multigame.manantiales.entity.ManantialesFicha;
 import mx.ecosur.multigame.manantiales.entity.ManantialesGame;
 import mx.ecosur.multigame.manantiales.entity.ManantialesMove;
 import mx.ecosur.multigame.manantiales.entity.ManantialesPlayer;
-
 import mx.ecosur.multigame.manantiales.enums.Mode;
 import mx.ecosur.multigame.manantiales.enums.TokenType;
 import mx.ecosur.multigame.model.interfaces.GamePlayer;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -28,7 +27,7 @@ import javax.jms.JMSException;
 
 import static util.TestUtilities.*;
 
-public class MoveTest extends JMSTestCaseAdapter {
+public class SuggestionTest extends JMSTestCaseAdapter {
 
     private ManantialesGame game;
 

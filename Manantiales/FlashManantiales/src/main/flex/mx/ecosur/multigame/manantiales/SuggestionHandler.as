@@ -152,10 +152,10 @@ import mx.effects.AnimateProperty;
             if (move.currentCell.column == move.destinationCell.column && move.currentCell.row == move.destinationCell.row)
                 return;
             
-            /* Animate suggestion */
             if (_currentSuggestions [ move.player.color ] == null)
                 _currentSuggestions [move.player.color] = suggestion;
 
+            /* Animate suggestion */
             animateSuggestion (suggestion);
 
             if (_timer != null && !_timer.running)
@@ -311,7 +311,7 @@ import mx.effects.AnimateProperty;
             return (_currentSuggestions[color] == null);
         }
 
-        /* Drag/drop handlers for making suggestions on other player's boards */
+        /* Drag/drop handler for making suggestions on other player's boards */
         public function startSuggestion(evt:MouseEvent):void
         {
             var token:ManantialesToken = ManantialesToken(evt.currentTarget);

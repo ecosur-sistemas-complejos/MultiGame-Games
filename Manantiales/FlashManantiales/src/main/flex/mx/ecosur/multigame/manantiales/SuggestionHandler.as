@@ -3,7 +3,8 @@
 package mx.ecosur.multigame.manantiales
 {
     import flash.display.DisplayObject;
-    import flash.events.MouseEvent;
+import flash.events.KeyboardEvent;
+import flash.events.MouseEvent;
     import flash.events.TimerEvent;
     import flash.geom.Point;
     import flash.utils.Dictionary;
@@ -39,6 +40,8 @@ import mx.effects.AnimateProperty;
         private var _player:ManantialesPlayer;
 
         private var _isMoving:Boolean;
+
+        private var _altDown:Boolean;
         
         private var _animations:int;
         
@@ -140,6 +143,30 @@ import mx.effects.AnimateProperty;
             }
             else {
                 _timer.stop();
+            }
+        }
+
+        public function dispatch(evt:MouseEvent):void {
+            if (_isMoving)
+                return;
+
+            /* Before starting drag, chance to check and see if ctrl key is active, and invoke type change event */
+            if (_altDown) {
+                typeSuggestion(evt);
+            } else {
+                startSuggestion(evt);
+            }
+        }
+
+        public function keyDown(evt:KeyboardEvent):void {
+            if (evt.altKey) {
+                this._altDown = true;
+            }
+        }
+
+        public function keyUp(evt:KeyboardEvent):void {
+            if (evt.altKey) {
+                this._altDown = false;
             }
         }
 
@@ -245,19 +272,24 @@ import mx.effects.AnimateProperty;
         }
         
         public function endSuggestion(evt:DragEvent):void{
+
+            var target:ManantialesToken;
+
             // unselect cell
             if (evt.dragSource.hasFormat("token")){
                 _isMoving = false;
                 if (evt.currentTarget != null) {
-                    var token:ManantialesToken = ManantialesToken(evt.currentTarget);
-                    token.selected = false;
+                    target = ManantialesToken(evt.currentTarget);
+                    target.selected = false;
                 } 
             }
             
             // remove dragged image
             if (evt.dragInitiator is ManantialesToken) {
                 var previous:ManantialesToken = ManantialesToken (evt.dragInitiator);
-                if (previous != null && previous.ficha.column > 0 && previous.ficha.row > 0) {
+                if (previous != null && target != null && previous.ficha.column != target.ficha.column &&
+                        previous.ficha.row != target.ficha.row)
+                {
                     var boardCell:BoardCell = _controller._gameWindow.board.getBoardCell(previous.cell.column, previous.cell.row);
                     var undeveloped:UndevelopedToken = new UndevelopedToken();
                     undeveloped.cell = previous.cell;
@@ -382,6 +414,7 @@ import mx.effects.AnimateProperty;
         }
 
         public function typeSuggestion(evt:MouseEvent):void {
+            Alert.show("typesuggestion.");
             var token:ManantialesToken = ManantialesToken(evt.currentTarget);
 
             if (freePlayer (token.cell.color) && _controller._currentPlayer.color == _player.color)

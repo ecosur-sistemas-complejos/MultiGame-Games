@@ -9,6 +9,7 @@ import com.mockrunner.ejb.EJBTestModule;
 import com.mockrunner.jms.JMSTestCaseAdapter;
 import com.mockrunner.mock.jms.MockTopic;
 
+import mx.ecosur.multigame.enums.GameState;
 import mx.ecosur.multigame.enums.MoveStatus;
 import mx.ecosur.multigame.exception.InvalidMoveException;
 import mx.ecosur.multigame.grid.entity.GridPlayer;
@@ -42,7 +43,7 @@ public class MoveTest extends JMSTestCaseAdapter {
     public void setUp() throws Exception {
         super.setUp();
         game = new ManantialesGame();
-        game.setMode(Mode.BASIC_PUZZLE);
+        game.setMode(Mode.SILVO_PUZZLE);
 
         /* Set up mock JMS destination for message sender */
         ejbModule = createEJBTestModule();
@@ -77,6 +78,7 @@ public class MoveTest extends JMSTestCaseAdapter {
     @Test
     public void testSetup() {
         assertNotNull(game.getPlayers());
+        assertTrue(game.getState().equals(GameState.PLAY));
     }
 
     /**
@@ -101,8 +103,6 @@ public class MoveTest extends JMSTestCaseAdapter {
         assertEquals(MoveStatus.EVALUATED, move.getStatus());
     }
 
-
-    @SuppressWarnings("unchecked")
     @Test
     public void testMoveModerate() throws JMSException, InvalidMoveException {
         ManantialesFicha man1 = new ManantialesFicha(0,4, bob.getColor(),
@@ -124,6 +124,117 @@ public class MoveTest extends JMSTestCaseAdapter {
 
         assertNull(game.getGrid().getLocation(man1));
         assertEquals (MoveStatus.EVALUATED, move.getStatus());
+    }
+
+    /**
+     * Test for MG-120 in regular puzzle.
+     */
+    @Test
+    public void testCompetitiveReplacement() throws JMSException, InvalidMoveException {
+        game.setMode(Mode.COMPETITIVE);
+        ManantialesFicha man1 = new ManantialesFicha(0,4, alice.getColor(),
+                TokenType.MANAGED_FOREST);
+        ManantialesFicha man2 = new ManantialesFicha(0,4, alice.getColor(),
+                TokenType.INTENSIVE_PASTURE);
+        SetIds(man1, man2);
+        removeTurns();
+
+        alice.setTurn(true);
+        ManantialesMove move = new ManantialesMove(alice, man1);
+        move.setMode(Mode.COMPETITIVE);
+        game.move(move);
+        removeTurns();
+
+        alice.setTurn(true);
+        move = new ManantialesMove(alice,man1,man2);
+        move.setMode(Mode.COMPETITIVE);
+        game.move(move);
+        removeTurns();
+        assertEquals (MoveStatus.INVALID, move.getStatus());
+    }
+
+    /**
+     * Test for MG-120 in regular puzzle.
+     */
+    @Test
+    public void testPuzzleReplacement() throws JMSException, InvalidMoveException {
+        game.setMode(Mode.BASIC_PUZZLE);
+        ManantialesFicha man1 = new ManantialesFicha(0,4, alice.getColor(),
+                TokenType.MANAGED_FOREST);
+        ManantialesFicha man2 = new ManantialesFicha(0,4, alice.getColor(),
+                TokenType.INTENSIVE_PASTURE);
+        SetIds(man1, man2);
+        removeTurns();
+
+        alice.setTurn(true);
+        ManantialesMove move = new ManantialesMove(alice, man1);
+        move.setMode(Mode.BASIC_PUZZLE);
+        game.move(move);
+        removeTurns();
+
+        alice.setTurn(true);
+        move = new ManantialesMove(alice,man1,man2);
+        move.setMode(Mode.BASIC_PUZZLE);
+        game.move(move);
+        removeTurns();
+        assertEquals(MoveStatus.EVALUATED, move.getStatus());
+    }
+    /**
+     * Test for MG-120 in SILVO_PUZZLE.
+     *
+     * Intensive replaces managed forest
+     */
+    @Test
+    public void testSilvoPuzzleReplacement1() throws JMSException, InvalidMoveException {
+        game.setMode(Mode.SILVO_PUZZLE);
+        ManantialesFicha man1 = new ManantialesFicha(0,4, alice.getColor(),
+                TokenType.MANAGED_FOREST);
+        ManantialesFicha man2 = new ManantialesFicha(0,4, alice.getColor(),
+                TokenType.INTENSIVE_PASTURE);
+        SetIds(man1, man2);
+        removeTurns();
+
+        alice.setTurn(true);
+        ManantialesMove move = new ManantialesMove(alice, man1);
+        move.setMode(Mode.SILVO_PUZZLE);
+        game.move(move);
+        removeTurns();
+
+        alice.setTurn(true);
+        move = new ManantialesMove(alice,man1,man2);
+        move.setMode(Mode.SILVO_PUZZLE);
+        game.move(move);
+        removeTurns();
+        assertEquals("Wrong move status! " + move.getStatus(), MoveStatus.EVALUATED, move.getStatus());
+    }
+
+    /**
+     * Test for MG-120 in SILVO_PUZZLE.
+     *
+     * Intensive replaces silvopastoral
+     */
+    @Test
+    public void testSilvoPuzzleReplacement2() throws JMSException, InvalidMoveException {
+        game.setMode(Mode.SILVO_PUZZLE);
+        ManantialesFicha man1 = new ManantialesFicha(0,4, alice.getColor(),
+                TokenType.SILVOPASTORAL);
+        ManantialesFicha man2 = new ManantialesFicha(0,4, alice.getColor(),
+                TokenType.INTENSIVE_PASTURE);
+        SetIds(man1, man2);
+        removeTurns();
+
+        alice.setTurn(true);
+        ManantialesMove move = new ManantialesMove(alice, man1);
+        move.setMode(Mode.SILVO_PUZZLE);
+        game.move(move);
+        removeTurns();
+
+        alice.setTurn(true);
+        move = new ManantialesMove(alice,man1,man2);
+        move.setMode(Mode.SILVO_PUZZLE);
+        game.move(move);
+        removeTurns();
+        assertEquals("Wrong move status! " + move.getStatus(), MoveStatus.EVALUATED, move.getStatus());
     }
 
     private void removeTurns() {

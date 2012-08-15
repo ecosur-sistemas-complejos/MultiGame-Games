@@ -340,6 +340,7 @@ package mx.ecosur.multigame.manantiales
                 if (_gameWindow.currentState != _game.mode) {
                     _gameWindow.currentState= _game.mode;
                 }
+                _gameWindow.begin();
                 _tokenHandler.initializeTokenStores();
                 _currentPlayer.play();
             }
@@ -446,6 +447,7 @@ package mx.ecosur.multigame.manantiales
          */
         private function gameServiceFaultHandler(event:FaultEvent):void{
             var errorMessage:ErrorMessage = ErrorMessage(event.message);
+            trace(errorMessage);
             if (errorMessage.extendedData != null){
                 if(errorMessage.extendedData[ExceptionType.EXCEPTION_TYPE_KEY] == ExceptionType.INVALID_MOVE){
                     var fnc:Function = function (event:CloseEvent):void{

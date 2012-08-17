@@ -65,6 +65,7 @@ public class ManantialesConditionsTest extends JMSTestCaseAdapter {
         ejbModule.bindToContext("MultiGame", mockTopic);
 
         game = new ManantialesGame();
+        game.setMode(Mode.COMPETITIVE);
         alice = (ManantialesPlayer) game.registerPlayer(new GridRegistrant("alice"));
         bob = (ManantialesPlayer) game.registerPlayer(new GridRegistrant("bob"));
         charlie = (ManantialesPlayer) game.registerPlayer(new GridRegistrant("charlie"));
@@ -171,7 +172,6 @@ public class ManantialesConditionsTest extends JMSTestCaseAdapter {
       move = new ManantialesMove (charlie, ficha3);
       mv = game.move(move);
       assertEquals(MoveStatus.EVALUATED, mv.getStatus());
-      assertEquals (3, game.getMoves().size());
       assertTrue ("CheckConstraint not fired!", game.getCheckConditions() != null);
       assertEquals(1, game.getCheckConditions().size());
    }
@@ -196,7 +196,6 @@ public class ManantialesConditionsTest extends JMSTestCaseAdapter {
        move = new ManantialesMove (charlie, ficha3);
        mv = game.move(move);
        assertEquals(MoveStatus.EVALUATED, mv.getStatus());
-       assertEquals (3, game.getMoves().size());
        assertTrue("CheckConstraint not fired!", game.getCheckConditions() != null);
        assertEquals(1, game.getCheckConditions().size());
    }
@@ -221,7 +220,6 @@ public class ManantialesConditionsTest extends JMSTestCaseAdapter {
        move = new ManantialesMove (charlie, ficha3);
        mv = game.move(move);
        assertEquals(MoveStatus.EVALUATED, mv.getStatus());
-       assertEquals (3, game.getMoves().size());
        assertTrue ("CheckConstraint not fired!", game.getCheckConditions() != null);
        assertEquals (1, game.getCheckConditions().size());
    }
@@ -246,7 +244,6 @@ public class ManantialesConditionsTest extends JMSTestCaseAdapter {
        move = new ManantialesMove (charlie, ficha3);
        mv = game.move(move);
        assertEquals(MoveStatus.EVALUATED, mv.getStatus());
-       assertEquals (3, game.getMoves().size());
        assertTrue ("CheckConstraint not fired!", game.getCheckConditions() != null);
        assertEquals(1, game.getCheckConditions().size());
    }

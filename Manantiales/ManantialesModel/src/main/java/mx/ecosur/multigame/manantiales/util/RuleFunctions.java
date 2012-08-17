@@ -75,9 +75,9 @@ public class RuleFunctions {
         return ret;
     }
 
-    public static boolean inSameLocation (GridCell a, ManantialesFicha b, ManantialesFicha c) {
-        return (a.getRow() != b.getRow() && a.getColumn() != b.getColumn()) &&
-                (a.getRow() != c.getRow() && a.getColumn() != c.getColumn());
+    public static boolean sameLocation(Cell a, Cell b, Cell c) {
+        return (a.getRow() == b.getRow() && a.getColumn() == b.getColumn()) ||
+                (a.getRow() == c.getRow() && a.getColumn() == c.getColumn());
     }
 
     public static int score (ManantialesPlayer player, ManantialesGame game) {

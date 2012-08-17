@@ -251,7 +251,9 @@ end
 # Only active once the move has been made.
 
 # An Intensive abutting move should be a check condition for non competitive games
-rule "contiguous intensives are checkconditions in puzzles"
+rule "contiguous intensives  triggers puzzle checkconditions"
+    agenda-group "verify"
+    no-loop true
     when
      $game : ManantialesGame (state == GameState.PLAY, $grid : grid,
         mode in (Mode.BASIC_PUZZLE, Mode.SILVO_PUZZLE), $checks : checkConditions)
@@ -308,8 +310,10 @@ rule
             type in (TokenType.MODERATE_PASTURE, TokenType.INTENSIVE_PASTURE))
         $tok2 : ManantialesFicha (id > $id, $id2 : id, border == BorderType.EAST,
             type in (TokenType.MODERATE_PASTURE, TokenType.INTENSIVE_PASTURE))
-        $move : ManantialesMove (badYear == false, status == MoveStatus.VERIFIED, $dest : destinationCell != null,
+        $move : ManantialesMove (badYear == false, status == MoveStatus.VERIFIED, 
+            $dest : destinationCell != null,
             border == BorderType.EAST, type == TokenType.MODERATE_PASTURE)
+        eval (!sameLocation((Cell) $dest, (Cell) $tok1, (Cell) $tok2))
     then
         CheckCondition constraint = new CheckCondition(
             ConditionType.EASTERN_BORDER_DEFORESTED, $move.getPlayer(),
@@ -553,14 +557,15 @@ rule "territory-deforested"
 end
 
 rule "resolve-contiguous-intensives-are-checkconditions-in-puzzles"
+    agenda-group "evaluate"
+    no-loop true
     when
         $game   : ManantialesGame (state == GameState.PLAY, mode in (Mode.BASIC_PUZZLE, Mode.SILVO_PUZZLE),
             $conditions : checkConditions)
         $move   : ManantialesMove (badYear == false, status == MoveStatus.MOVED,
-            status == MoveStatus.MOVED, $current : currentCell, $dest : destinationCell, type != TokenType.INTENSIVE_PASTURE)
+            status == MoveStatus.MOVED, $dest : destinationCell != null, type != TokenType.INTENSIVE_PASTURE)
         $constraint : CheckCondition (type == ConditionType.INVALID_MOVE, $violators : violators,
             expired != true)
-        GridCell ($current.row == row, $current.column == column) from $violators
         GridCell ($dest.row == row, $dest.column == column) from $violators
     then
         modify($constraint) { setExpired(true) };

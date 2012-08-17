@@ -23,8 +23,6 @@ package mx.ecosur.multigame.manantiales.token
 
         public function ManantialesTokenStore() {
             super();
-            addEventListener(DragEvent.DRAG_ENTER,dragEnter);
-            addEventListener(DragEvent.DRAG_DROP, dragDrop);
             _initialized = false;
         }
 
@@ -45,7 +43,6 @@ package mx.ecosur.multigame.manantiales.token
                 var target:ManantialesToken = ManantialesToken(event.target);
                 target.setStyle ('interactionMode', InteractionMode.MOUSE);
                 target.selected = true;
-                target.placed = false;
             }
         }
 
@@ -87,34 +84,6 @@ package mx.ecosur.multigame.manantiales.token
 
         public function get tokenType():String {
             return _tokenType;
-        }
-
-        protected function dragEnter(evt:DragEvent):void{
-
-            if (evt.dragSource.hasFormat("token")){
-                var token:ManantialesToken = ManantialesToken(evt.dragSource.dataForFormat("token"));
-
-                if(token.placed && token.type == _tokenType && token.cell.color == _currentPlayer.color){
-                    DragManager.acceptDragDrop(this);
-                }
-            }
-        }
-
-        protected function dragDrop(evt:DragEvent):void{
-            if (_nTokens < INITIAL_N_TOKENS && evt.dragSource.hasFormat("token")) {
-                var token:ManantialesToken = ManantialesToken(evt.dragSource.dataForFormat("token"));
-                addToken();
-
-                 /* Send "remove" move to controller */
-                var move:ManantialesMove = new ManantialesMove ();
-                move.currentCell = token.ficha;
-                move.destinationCell = null;
-
-                var event:DragMoveEvent = new DragMoveEvent("DragAndDrop", move);
-                dispatchEvent(event);
-
-            }
-
         }
     }
 

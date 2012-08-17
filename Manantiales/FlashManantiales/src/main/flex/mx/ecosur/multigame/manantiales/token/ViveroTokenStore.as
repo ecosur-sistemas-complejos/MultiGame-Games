@@ -30,12 +30,5 @@ import mx.events.DragEvent;
             addChild(token);
             _nTokens ++;
         }
-
-        public function returnToken (dragEvent:DragEvent):void {
-            var token:ManantialesToken = ManantialesToken (dragEvent.dragSource.dataForFormat("token"));
-            if (token.ficha.type == TokenType.VIVERO) {
-                addToken();
-            }
-        }
 	}
 }

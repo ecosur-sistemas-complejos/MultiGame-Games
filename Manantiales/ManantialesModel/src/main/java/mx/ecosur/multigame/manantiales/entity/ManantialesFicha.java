@@ -20,7 +20,7 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 import mx.ecosur.multigame.grid.Color;
 
 @Entity
-public class ManantialesFicha extends GridCell {
+public class ManantialesFicha extends GridCell implements Comparable<ManantialesFicha> {
 
     private static final long serialVersionUID = -8048552960014554186L;
     private TokenType type;
@@ -110,6 +110,32 @@ public class ManantialesFicha extends GridCell {
         return ret;
     }
 
+    @Override
+    public int compareTo(ManantialesFicha comp) {
+        if (this.equals(comp)) {
+            return 0;
+        } else if (this.getId() != 0 && comp.getId() != 0) {
+            if (this.getId() > comp.getId()) {
+                return 1;
+            } if (this.getId() == comp.getId()) {
+                return 0;
+            } else {
+                return -1;
+            }
+        } else {
+            if (this.getRow() > comp.getRow()) {
+                return 1;
+            } else if (this.getRow() < comp.getRow()) {
+                return -1;
+            } else if (this.getColumn() > comp.getColumn()) {
+                return 1;
+            } else if (this.getColumn() < comp.getColumn()) {
+                return -1;
+            }
+        }
+
+        return 0;
+    }
     /* (non-Javadoc)
      * @see java.lang.Object#hashCode()
      */
@@ -130,4 +156,5 @@ public class ManantialesFicha extends GridCell {
     public String toString() {
         return "[Ficha, type = " + type + ", " + super.toString();
     }
+
 }

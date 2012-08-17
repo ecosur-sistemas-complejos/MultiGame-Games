@@ -1,7 +1,6 @@
 package mx.ecosur.multigame.manantiales {
 
-import flash.events.MouseEvent;
-
+    import flash.events.MouseEvent;
     import mx.collections.ArrayCollection;
     import mx.controls.Alert;
     import mx.core.DragSource;
@@ -12,21 +11,15 @@ import flash.events.MouseEvent;
     import mx.ecosur.multigame.manantiales.entity.Ficha;
     import mx.ecosur.multigame.manantiales.entity.ManantialesMove;
     import mx.ecosur.multigame.manantiales.entity.ManantialesPlayer;
-    import mx.ecosur.multigame.manantiales.enum.Mode;
     import mx.ecosur.multigame.manantiales.enum.TokenType;
     import mx.ecosur.multigame.manantiales.token.ForestToken;
-    import mx.ecosur.multigame.manantiales.token.ForestTokenStore;
     import mx.ecosur.multigame.manantiales.token.IntensiveToken;
-    import mx.ecosur.multigame.manantiales.token.IntensiveTokenStore;
     import mx.ecosur.multigame.manantiales.token.ManantialesToken;
     import mx.ecosur.multigame.manantiales.token.ManantialesTokenStore;
     import mx.ecosur.multigame.manantiales.token.ModerateToken;
-    import mx.ecosur.multigame.manantiales.token.ModerateTokenStore;
     import mx.ecosur.multigame.manantiales.token.SilvopastoralToken;
-    import mx.ecosur.multigame.manantiales.token.SilvopastoralTokenStore;
     import mx.ecosur.multigame.manantiales.token.UndevelopedToken;
     import mx.ecosur.multigame.manantiales.token.ViveroToken;
-    import mx.ecosur.multigame.manantiales.token.ViveroTokenStore;
     import mx.events.DragEvent;
     import mx.managers.DragManager;
 
@@ -43,6 +36,8 @@ import flash.events.MouseEvent;
         private var _mode:String;
 
         private var _isMoving:Boolean;
+
+        private var _altDown:Boolean;
 
         public function TokenHandler(gameWindow:ManantialesWindow, player:ManantialesPlayer, handler:SuggestionHandler)
         {
@@ -127,16 +122,16 @@ import flash.events.MouseEvent;
 
                 // define target cell
                 var targetCell:BoardCell = BoardCell(evt.currentTarget);
+
+                /* Get source */
                 var sourceToken:ManantialesToken = ManantialesToken (evt.dragSource.dataForFormat("source"));
 
-                if (sourceToken.placed) {
-                    if (sourceToken != null && sourceToken.cell != null) {
-                        move.currentCell = sourceToken.cell;
-                        var sourceCell:RoundCell = RoundCell (this._gameWindow.board.getBoardCell(
-                                sourceToken.cell.column, sourceToken.cell.row));
-                        sourceCell.token = new UndevelopedToken();
-                        sourceCell.reset();
-                    }
+                if (sourceToken != null && sourceToken.cell != null) {
+                    move.currentCell = sourceToken.cell;
+                    var sourceCell:RoundCell = RoundCell (this._gameWindow.board.getBoardCell(
+                            sourceToken.cell.column, sourceToken.cell.row));
+                    sourceCell.token = new UndevelopedToken();
+                    sourceCell.reset();
                 }
 
                 if (targetCell.token.cell != null) {
@@ -150,6 +145,7 @@ import flash.events.MouseEvent;
                 move.destinationCell = destination;
                 move.mode = _mode;
 
+                /* TODO: This switch needs cleaning up, and is not currently accurate (if working) */
                 if (move.currentCell == null
                         && (destToken.cell.color == _currentPlayer.color || destToken.cell.color == Color.UNKNOWN))
                 {
@@ -163,7 +159,10 @@ import flash.events.MouseEvent;
                         move.currentCell != null)
                 {
                     decrementStore(Ficha (move.destinationCell));
-                    incrementStore(Ficha (move.currentCell));
+                    if (move.currentCell instanceof Ficha)
+                        incrementStore(Ficha (move.currentCell));
+                    else
+                        move.currentCell = null;    // hack
                     move.player = _currentPlayer;
                     _gameWindow.controller.sendMove(move);
 
@@ -268,28 +267,19 @@ import flash.events.MouseEvent;
             return _currentPlayer.turn;
         }
 
-        public function startMove(evt:MouseEvent):void{
-
-            if (_isMoving)
-                return;
-
-            if ((_mode == Mode.COMPETITIVE || _mode == Mode.SILVOPASTORAL) && !isTurn())
-                return;
-
+        public function startMove(evt:MouseEvent):void {
             // initialize drag source
             var token:ManantialesToken = ManantialesToken(evt.currentTarget);
             var ds:DragSource = new DragSource();
             ds.addData(token, "token");
-
             // create proxy image and start drag
             var dragImage:IFlexDisplayObject = token.createDragImage();
-            DragManager.doDrag(token, ds, evt, dragImage);
-            _isMoving = true;
-
             var previous:ManantialesToken = ManantialesToken(evt.currentTarget);
             // Add previous to the drag source
             ds.addData(previous,"source");
-
+            /* Drag Start initiated last for clean event propagation */
+            DragManager.doDrag(token, ds, evt, dragImage);
+            _isMoving = true;
         }
 
         public function endMove(evt:DragEvent):void{
@@ -320,11 +310,8 @@ import flash.events.MouseEvent;
                      token.addEventListener(MouseEvent.MOUSE_DOWN, startMove);
                      token.addEventListener(DragEvent.DRAG_COMPLETE, endMove);
                 }else{
-                    token.addEventListener(MouseEvent.MOUSE_DOWN, _suggestionHandler.startSuggestion);
+                    token.addEventListener(MouseEvent.MOUSE_DOWN, _suggestionHandler.dispatch);
                     token.addEventListener(DragEvent.DRAG_COMPLETE, _suggestionHandler.endSuggestion);
-                    token.addEventListener(MouseEvent.CLICK, _suggestionHandler.typeSuggestion);
-                    token.addEventListener(MouseEvent.DOUBLE_CLICK, _suggestionHandler.typeSuggestion);
-                    token.doubleClickEnabled = true;
                 }
             }
         }                               

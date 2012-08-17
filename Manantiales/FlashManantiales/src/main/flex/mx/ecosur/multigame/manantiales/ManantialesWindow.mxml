@@ -55,7 +55,6 @@
             intensiveStore.addEventListener("DragAndDrop", controller.handleDragMoveEvent);
             viveroStore.addEventListener("DragAndDrop", controller.handleDragMoveEvent);
             silvoStore.addEventListener("DragAndDrop", controller.handleDragMoveEvent);
-
         }
 
         public function destroy():void {

@@ -75,7 +75,6 @@ import mx.controls.Button;
                      break;
             }
          }
-
          return ret;
         }
 
@@ -177,7 +176,7 @@ import mx.controls.Button;
             if (move.destinationCell != null) {
                boardCell = RoundCell(_controller._gameWindow.board.getBoardCell(
                     move.destinationCell.column, move.destinationCell.row));
-                if (!boardCell.token is UndevelopedToken || boardCell.token is IntensiveToken)
+                if (!boardCell.token is UndevelopedToken)
                 {
                     return;
                 }

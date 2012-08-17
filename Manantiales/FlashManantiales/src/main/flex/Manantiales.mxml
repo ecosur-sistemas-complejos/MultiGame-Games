@@ -8,6 +8,7 @@
     <mx:Script>
         <![CDATA[
             import mx.controls.Alert;
+            import mx.ecosur.multigame.manantiales.ManantialesGameController;
             import mx.ecosur.multigame.manantiales.ManantialesWindow;
             import mx.ecosur.multigame.event.PlayEvent;
             import mx.ecosur.multigame.manantiales.entity.ManantialesGame;
@@ -41,11 +42,9 @@
 
             public function eventHandler(event:ResultEvent):void {
                 CursorManager.removeBusyCursor();
-
                 if (_gameWindow == null) {
                     _gameWindow = new ManantialesWindow();
                 }
-
                 var game:ManantialesGame = ManantialesGame(event.result);
                 _gameWindow.currentGame = game;
                 for (var i:int = 0; i < game.players.length; i++) {

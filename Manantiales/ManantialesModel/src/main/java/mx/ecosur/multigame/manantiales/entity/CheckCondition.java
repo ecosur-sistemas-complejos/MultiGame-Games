@@ -165,6 +165,11 @@ public class CheckCondition implements Condition {
             toHashCode();
     }
 
+    @Override
+    public String toString() {
+        return reason.toString() + ", violators: " + violators;
+    }
+
     /* (non-Javadoc)
     * @see java.lang.Object#equals(java.lang.Object)
     */

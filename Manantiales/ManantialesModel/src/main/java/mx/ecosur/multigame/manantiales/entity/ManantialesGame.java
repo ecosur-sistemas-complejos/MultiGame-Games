@@ -116,6 +116,7 @@ public class ManantialesGame extends GridGame {
         assert (counter == 48);
 
         /* Edges only valid if _nRows = 9 and _nCols = 9, e.g. 8x8 grid ; */
+        /* TODO: clean this up to use a list based graph structure */
 
         ret.addEdge(0, 1);
         ret.addEdge(0, 5);

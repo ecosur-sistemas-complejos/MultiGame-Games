@@ -1,5 +1,7 @@
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.TreeSet;
 
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -12,13 +14,17 @@ import mx.ecosur.multigame.enums.GameState;
 import mx.ecosur.multigame.enums.MoveStatus;
 import mx.ecosur.multigame.exception.InvalidMoveException;
 
+import mx.ecosur.multigame.grid.entity.GameGrid;
+import mx.ecosur.multigame.grid.entity.GridCell;
 import mx.ecosur.multigame.grid.entity.GridRegistrant;
 import mx.ecosur.multigame.manantiales.entity.ManantialesFicha;
 import mx.ecosur.multigame.manantiales.entity.ManantialesGame;
 import mx.ecosur.multigame.manantiales.entity.ManantialesMove;
 import mx.ecosur.multigame.manantiales.entity.ManantialesPlayer;
+import mx.ecosur.multigame.manantiales.enums.Mode;
 import mx.ecosur.multigame.manantiales.enums.TokenType;
 import mx.ecosur.multigame.model.interfaces.Move;
+import org.antlr.codegen.ObjCTarget;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -59,6 +65,7 @@ public class ManantialesConditionsTest extends JMSTestCaseAdapter {
         ejbModule.bindToContext("MultiGame", mockTopic);
 
         game = new ManantialesGame();
+        game.setMode(Mode.COMPETITIVE);
         alice = (ManantialesPlayer) game.registerPlayer(new GridRegistrant("alice"));
         bob = (ManantialesPlayer) game.registerPlayer(new GridRegistrant("bob"));
         charlie = (ManantialesPlayer) game.registerPlayer(new GridRegistrant("charlie"));
@@ -165,7 +172,6 @@ public class ManantialesConditionsTest extends JMSTestCaseAdapter {
       move = new ManantialesMove (charlie, ficha3);
       mv = game.move(move);
       assertEquals(MoveStatus.EVALUATED, mv.getStatus());
-      assertEquals (3, game.getMoves().size());
       assertTrue ("CheckConstraint not fired!", game.getCheckConditions() != null);
       assertEquals(1, game.getCheckConditions().size());
    }
@@ -190,7 +196,6 @@ public class ManantialesConditionsTest extends JMSTestCaseAdapter {
        move = new ManantialesMove (charlie, ficha3);
        mv = game.move(move);
        assertEquals(MoveStatus.EVALUATED, mv.getStatus());
-       assertEquals (3, game.getMoves().size());
        assertTrue("CheckConstraint not fired!", game.getCheckConditions() != null);
        assertEquals(1, game.getCheckConditions().size());
    }
@@ -215,7 +220,6 @@ public class ManantialesConditionsTest extends JMSTestCaseAdapter {
        move = new ManantialesMove (charlie, ficha3);
        mv = game.move(move);
        assertEquals(MoveStatus.EVALUATED, mv.getStatus());
-       assertEquals (3, game.getMoves().size());
        assertTrue ("CheckConstraint not fired!", game.getCheckConditions() != null);
        assertEquals (1, game.getCheckConditions().size());
    }
@@ -240,7 +244,6 @@ public class ManantialesConditionsTest extends JMSTestCaseAdapter {
        move = new ManantialesMove (charlie, ficha3);
        mv = game.move(move);
        assertEquals(MoveStatus.EVALUATED, mv.getStatus());
-       assertEquals (3, game.getMoves().size());
        assertTrue ("CheckConstraint not fired!", game.getCheckConditions() != null);
        assertEquals(1, game.getCheckConditions().size());
    }
@@ -286,5 +289,149 @@ public class ManantialesConditionsTest extends JMSTestCaseAdapter {
        messages = filterForEvent(GameEvent.CONDITION_TRIGGERED);
        assertEquals(1, messages.size());
    }
+   
+   /** 
+    * Tests for constraint triggered by two Intensive tokens adjacent.
+    * Ensures that game continues and constraint is presented. 
+    */
+   @Test
+   public void testIntensiveCheckCondition() throws InvalidMoveException, JMSException {
+        game.setMode(Mode.SILVO_PUZZLE);
+        ManantialesFicha contig1 = new ManantialesFicha(5, 4, alice.getColor(),
+                        TokenType.INTENSIVE_PASTURE);
+        ManantialesFicha contig2 = new ManantialesFicha(6, 4, alice.getColor(),
+                        TokenType.INTENSIVE_PASTURE);
+        SetIds(contig1, contig2);
+        GameGrid grid = game.getGrid();
+        if (grid.isEmpty())
+            grid.setCells(new TreeSet<GridCell>());
+        game.getGrid().getCells().add(contig1);
+        ManantialesMove move = new ManantialesMove (alice, contig2);
+        game.move (move);
+        assertEquals (MoveStatus.EVALUATED, move.getStatus());
+        assertEquals(1, game.getCheckConditions().size());
+        List<Message> messages = filterForEvent(GameEvent.CONDITION_RAISED);
+        assertEquals(1, messages.size());
+   }
 
+   @Test
+   public void testRelieveIntensiveCheckConditionWithForest() throws InvalidMoveException, JMSException {
+        game.setMode(Mode.SILVO_PUZZLE);
+        ManantialesFicha contig1 = new ManantialesFicha(5, 4, alice.getColor(),
+                        TokenType.INTENSIVE_PASTURE);
+        ManantialesFicha contig2 = new ManantialesFicha(6, 4, alice.getColor(),
+                        TokenType.INTENSIVE_PASTURE);
+        SetIds(contig1, contig2);
+        GameGrid grid = game.getGrid();
+        if (grid.isEmpty())
+            grid.setCells(new TreeSet<GridCell>());
+        game.getGrid().getCells().add(contig1);
+        ManantialesMove move = new ManantialesMove (alice, contig2);
+        game.move (move);
+        assertEquals (MoveStatus.EVALUATED, move.getStatus());
+        assertEquals(1, game.getCheckConditions().size());
+        List<Message> messages = filterForEvent(GameEvent.CONDITION_RAISED);
+        assertEquals(1, messages.size());
+
+        /* Now relieve the condition */
+        alice.setTurn(true);
+        ManantialesFicha relief = new ManantialesFicha(5,4,alice.getColor(), TokenType.MANAGED_FOREST);
+        move = new ManantialesMove(alice, contig1, relief);
+        game.move(move);
+        assertEquals (MoveStatus.EVALUATED, move.getStatus());
+        assertEquals(0, game.getCheckConditions().size());
+        messages = filterForEvent(GameEvent.CONDITION_RESOLVED);
+        assertEquals(1, messages.size());
+
+   }
+
+   @Test
+   public void testRelieveIntensiveCheckConditionWithSilvo() throws InvalidMoveException, JMSException {
+        game.setMode(Mode.SILVO_PUZZLE);
+        ManantialesFicha contig1 = new ManantialesFicha(5, 4, alice.getColor(),
+                        TokenType.INTENSIVE_PASTURE);
+        ManantialesFicha contig2 = new ManantialesFicha(6, 4, alice.getColor(),
+                        TokenType.INTENSIVE_PASTURE);
+        SetIds(contig1, contig2);
+        GameGrid grid = game.getGrid();
+        if (grid.isEmpty())
+            grid.setCells(new TreeSet<GridCell>());
+        game.getGrid().getCells().add(contig1);
+        ManantialesMove move = new ManantialesMove (alice, contig2);
+        game.move (move);
+        assertEquals (MoveStatus.EVALUATED, move.getStatus());
+        assertEquals(1, game.getCheckConditions().size());
+        List<Message> messages = filterForEvent(GameEvent.CONDITION_RAISED);
+        assertEquals(1, messages.size());
+
+        /* Now relieve the condition */
+        alice.setTurn(true);
+        ManantialesFicha relief = new ManantialesFicha(5,4,alice.getColor(), TokenType.SILVOPASTORAL);
+        move = new ManantialesMove(alice, contig1, relief);
+        game.move(move);
+        assertEquals (MoveStatus.EVALUATED, move.getStatus());
+        assertEquals(0, game.getCheckConditions().size());
+        messages = filterForEvent(GameEvent.CONDITION_RESOLVED);
+        assertEquals(1, messages.size());
+   }
+
+   @Test
+   public void testNotRelieveIntensiveCheckConditionWithIntensive() throws InvalidMoveException, JMSException {
+        game.setMode(Mode.SILVO_PUZZLE);
+        ManantialesFicha contig1 = new ManantialesFicha(5, 4, alice.getColor(),
+                        TokenType.INTENSIVE_PASTURE);
+        ManantialesFicha contig2 = new ManantialesFicha(6, 4, alice.getColor(),
+                        TokenType.INTENSIVE_PASTURE);
+        SetIds(contig1, contig2);
+        GameGrid grid = game.getGrid();
+        if (grid.isEmpty())
+            grid.setCells(new TreeSet<GridCell>());
+        game.getGrid().getCells().add(contig1);
+        ManantialesMove move = new ManantialesMove (alice, contig2);
+        game.move (move);
+        assertEquals (MoveStatus.EVALUATED, move.getStatus());
+        assertEquals(1, game.getCheckConditions().size());
+        List<Message> messages = filterForEvent(GameEvent.CONDITION_RAISED);
+        assertEquals(1, messages.size());
+
+        /* Now relieve the condition */
+        alice.setTurn(true);
+        ManantialesFicha relief = new ManantialesFicha(5,4,alice.getColor(), TokenType.INTENSIVE_PASTURE);
+        move = new ManantialesMove(alice, contig1, relief);
+        game.move(move);
+        assertEquals (MoveStatus.EVALUATED, move.getStatus());
+        assertEquals(1, game.getCheckConditions().size());
+        messages = filterForEvent(GameEvent.CONDITION_RESOLVED);
+        assertEquals(0, messages.size());
+   }
+
+    @Test
+    public void testRelieveIntensiveCheckConditionWithModerate() throws InvalidMoveException, JMSException {
+        game.setMode(Mode.SILVO_PUZZLE);
+        ManantialesFicha contig1 = new ManantialesFicha(5, 4, alice.getColor(),
+                TokenType.INTENSIVE_PASTURE);
+        ManantialesFicha contig2 = new ManantialesFicha(6, 4, alice.getColor(),
+                TokenType.INTENSIVE_PASTURE);
+        SetIds(contig1, contig2);
+        GameGrid grid = game.getGrid();
+        if (grid.isEmpty())
+            grid.setCells(new TreeSet<GridCell>());
+        game.getGrid().getCells().add(contig1);
+        ManantialesMove move = new ManantialesMove (alice, contig2);
+        game.move (move);
+        assertEquals (MoveStatus.EVALUATED, move.getStatus());
+        assertEquals(1, game.getCheckConditions().size());
+        List<Message> messages = filterForEvent(GameEvent.CONDITION_RAISED);
+        assertEquals(1, messages.size());
+
+        alice.setTurn(true);
+        ManantialesFicha relief = new ManantialesFicha(5,4,alice.getColor(), TokenType.MODERATE_PASTURE);
+        move = new ManantialesMove(alice, contig1, relief);
+        game.move(move);
+        assertEquals (MoveStatus.EVALUATED, move.getStatus());
+        assertEquals(Arrays.toString(game.getCheckConditions().toArray()), 0, game.getCheckConditions().size());
+        messages = filterForEvent(GameEvent.CONDITION_RESOLVED);
+        assertEquals(1, messages.size());
+
+    }
 }

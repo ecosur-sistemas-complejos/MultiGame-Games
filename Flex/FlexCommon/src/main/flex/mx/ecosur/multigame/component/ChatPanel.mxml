@@ -25,6 +25,8 @@
     public var currentGame:Game;
     private var _messages:ArrayCollection;
 
+
+
      /* Functions */
     private function send():void {
         if (StringUtil.trim(msg.text).length == 0) {
@@ -39,7 +41,7 @@
         message.headers.GAME_ID = currentGame.id;
         message.headers.GAME_EVENT = GameEvent.CHAT;
         producer.send(message);
-        msg.text = "";
+        msg.text = null;
     }
 
     public function addMessage(chatMessage:ChatMessage):void {
@@ -67,7 +69,7 @@
 
     <mx:TextArea id="log" width="100%" height="100%" paddingLeft="0" borderThickness="0" editable="false" />
     <mx:ControlBar verticalAlign="top" paddingLeft="5" paddingRight="5">
-         <mx:TextArea id="msg" width="100%" height="40"/>
+         <mx:TextInput id="msg" width="100%" height="40" keyDown="if (event.keyCode==Keyboard.ENTER){ send();}"/>
          <mx:Button id="sendBtn" label="{resourceManager.getString('Commons','chat.panel.button')}" click="send()" color="#ffffff"/>
     </mx:ControlBar>
 </mx:Panel>

@@ -32,8 +32,18 @@ import org.drools.io.ResourceFactory;
 import org.drools.KnowledgeBaseFactory;
 import org.drools.KnowledgeBase;
 
+import com.google.common.io.Files;
+
 import java.awt.*;
 import java.util.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.MalformedURLException;
 import java.util.List;
 
@@ -59,6 +69,12 @@ public class ManantialesGame extends GridGame {
     private int turns;
 
     private long elapsedTime;
+    
+    private static File TempDir;
+    
+    static {
+        TempDir = Files.createTempDir();
+    }
 
     public ManantialesGame () {
         super();
@@ -374,20 +390,41 @@ public class ManantialesGame extends GridGame {
         return "Manantiales";
     }
 
-    protected KnowledgeBase findKBase () {
-        KnowledgeBase ret = KnowledgeBaseFactory.newKnowledgeBase();
-        KnowledgeBuilder kbuilder = KnowledgeBuilderFactory.newKnowledgeBuilder();
-        kbuilder.add(ResourceFactory.newInputStreamResource(getClass().getResourceAsStream (
-            "/mx/ecosur/multigame/impl/manantiales.xml")), ResourceType.CHANGE_SET);
-        ret.addKnowledgePackages(kbuilder.getKnowledgePackages());
-        KnowledgeBuilderErrors errors = kbuilder.getErrors();
-        if (!errors.isEmpty()) {
-            for (KnowledgeBuilderError error : errors) {
-                System.out.println(error.getMessage());
-            }
-        }
+    protected KnowledgeBase findKBase () throws IOException, ClassNotFoundException {
+        KnowledgeBase ret = null;
+        /* Try and load kbase from File system */
+        File f = new File(TempDir + File.separator + "manantiales.kbase");
+        if (f.exists()) {
+            KnowledgeBase kBase = KnowledgeBaseFactory.newKnowledgeBase(); 
+            InputStream is = new FileInputStream(f);
+            ObjectInputStream ois = new ObjectInputStream( is );
+            @SuppressWarnings("unchecked")
+            Collection kpkgs =
+                (Collection) ois.readObject();
+            ois.close();
+            kBase.addKnowledgePackages( kpkgs );
+            return kBase;
+    
+        } else {
+            ret = KnowledgeBaseFactory.newKnowledgeBase();
+            KnowledgeBuilder kbuilder = KnowledgeBuilderFactory.newKnowledgeBuilder();
+            kbuilder.add(ResourceFactory.newInputStreamResource(getClass().getResourceAsStream (
+                "/mx/ecosur/multigame/impl/manantiales.xml")), ResourceType.CHANGE_SET);
+            ret.addKnowledgePackages(kbuilder.getKnowledgePackages());
+            KnowledgeBuilderErrors errors = kbuilder.getErrors();
+            if (!errors.isEmpty()) {
+                for (KnowledgeBuilderError error : errors) {
+                    System.out.println(error.getMessage());
+                }   
+            }   
+            /* Store the kbase to the file system */
+            ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(f));
+            oos.writeObject(kbuilder.getKnowledgePackages() );
+            oos.close();    
+        }   
 
         return ret;
+        
     }
 
     @Transient
@@ -401,8 +438,13 @@ public class ManantialesGame extends GridGame {
         if (move.getMode()== null)
             move.setMode(getMode());
 
-        if (kbase == null)
-            kbase = findKBase();
+        if (kbase == null) {
+            try {
+                kbase = findKBase();
+            } catch (Exception e) {
+                throw new RuntimeException(e); 
+            }
+        }
 
         StatefulKnowledgeSession session = kbase.newStatefulKnowledgeSession();
         session.setGlobal("messageSender", getMessageSender());
@@ -430,8 +472,13 @@ public class ManantialesGame extends GridGame {
 
     @Override
     public Suggestion suggest (Suggestion suggestion) {
-        if (kbase == null)
-            kbase = findKBase();
+        if (kbase == null) {
+            try {
+                kbase = findKBase();
+            } catch (Exception e) {
+                throw new RuntimeException (e);
+            }
+        }
         ManantialesMove move = (ManantialesMove) suggestion.listMove();
         if (move.getMode() == null)
             move.setMode(getMode());

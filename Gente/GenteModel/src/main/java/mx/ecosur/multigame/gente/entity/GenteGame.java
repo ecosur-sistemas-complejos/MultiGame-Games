@@ -29,6 +29,8 @@ import org.drools.io.ResourceFactory;
 
 import org.drools.runtime.StatefulKnowledgeSession;
 
+import com.google.common.io.Files;
+
 import java.io.*;
 import java.util.*;
 import java.net.MalformedURLException;
@@ -50,7 +52,11 @@ public class GenteGame extends GridGame {
 
     private static KnowledgeBase kbase;
 
-    private static File Temp;
+    private static File TempDir;
+    
+    static {
+        TempDir = Files.createTempDir();
+    }
 
     public GenteGame () {
         super();
@@ -100,8 +106,13 @@ public class GenteGame extends GridGame {
         this.setColumns(19);
         this.setRows(19);
 
-        if (kbase == null)
-            kbase = findKBase();
+        if (kbase == null) {
+            try {
+                kbase = findKBase();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
 
         StatefulKnowledgeSession session = kbase.newStatefulKnowledgeSession();
         session.setGlobal("messageSender", getMessageSender());
@@ -117,8 +128,13 @@ public class GenteGame extends GridGame {
       */
     public Move move(Move m) throws InvalidMoveException {
         GridMove move = (GridMove) m;
-        if (kbase == null)
-            kbase = findKBase();
+        if (kbase == null) {
+            try {
+                kbase = findKBase();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
         if (grid.isEmpty())
             grid.setCells(new TreeSet<GridCell>(new CellComparator()));
 
@@ -256,25 +272,38 @@ public class GenteGame extends GridGame {
         return "Gente";
     }
 
-    protected KnowledgeBase findKBase () {
-        KnowledgeBase ret = KnowledgeBaseFactory.newKnowledgeBase();
-        KnowledgeBuilder kbuilder = KnowledgeBuilderFactory.newKnowledgeBuilder();
-        Resource resource = ResourceFactory.newInputStreamResource(
-                this.getClass().getResourceAsStream ("/mx/ecosur/multigame/gente/gente.xml"));
-        kbuilder.add(resource, ResourceType.CHANGE_SET);
-        ret.addKnowledgePackages(kbuilder.getKnowledgePackages());
-        try {
-            resource.getReader().close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        KnowledgeBuilderErrors errors = kbuilder.getErrors();
-        if (!errors.isEmpty()) {
-            for (KnowledgeBuilderError error : errors) {
-                System.out.println(error.getMessage());
-            }
-        }
-
+    protected KnowledgeBase findKBase () throws IOException, ClassNotFoundException {
+        KnowledgeBase ret = null;
+        /* Try and load kbase from File system */
+        File f = new File(TempDir + File.separator + "gente.kbase");
+        if (f.exists()) {
+            KnowledgeBase kBase = KnowledgeBaseFactory.newKnowledgeBase(); 
+            InputStream is = new FileInputStream(f);
+            ObjectInputStream ois = new ObjectInputStream( is );
+            @SuppressWarnings("unchecked")
+            Collection kpkgs =
+                (Collection) ois.readObject();
+            ois.close();
+            kBase.addKnowledgePackages( kpkgs );
+            return kBase;
+    
+        } else {
+            ret = KnowledgeBaseFactory.newKnowledgeBase();
+            KnowledgeBuilder kbuilder = KnowledgeBuilderFactory.newKnowledgeBuilder();
+            kbuilder.add(ResourceFactory.newInputStreamResource(getClass().getResourceAsStream (
+                "/mx/ecosur/multigame/gente/gente.xml")), ResourceType.CHANGE_SET);
+            ret.addKnowledgePackages(kbuilder.getKnowledgePackages());
+            KnowledgeBuilderErrors errors = kbuilder.getErrors();
+            if (!errors.isEmpty()) {
+                for (KnowledgeBuilderError error : errors) {
+                    System.out.println(error.getMessage());
+                }   
+            }   
+            /* Store the kbase to the file system */
+            ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(f));
+            oos.writeObject(kbuilder.getKnowledgePackages() );
+            oos.close();    
+        }   
         return ret;
     }
 

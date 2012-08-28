@@ -2,7 +2,6 @@ package mx.ecosur.multigame.gente.entity;
 
 import mx.ecosur.multigame.grid.comparator.CellComparator;
 import mx.ecosur.multigame.grid.entity.GridCell;
-import org.hibernate.annotations.Sort;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -27,7 +26,7 @@ public class Tria implements Serializable {
     }
 
     @ManyToMany(cascade={CascadeType.PERSIST, CascadeType.MERGE}, fetch= FetchType.EAGER)
-    @Sort(comparator=CellComparator.class)
+    @OrderBy("row,column")
     public Set<GridCell> getCells() {
         if (_cells == null)
             _cells = new TreeSet<GridCell>(new CellComparator());

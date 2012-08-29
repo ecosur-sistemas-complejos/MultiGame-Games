@@ -42,7 +42,7 @@ public class AdjGraph {
         Point ret = null;
         for (Point p : map.keySet()) {
             Integer i = map.get(p);
-            if (i.intValue() == node) {
+            if (i == node) {
                 ret = p;
                 break;
             }

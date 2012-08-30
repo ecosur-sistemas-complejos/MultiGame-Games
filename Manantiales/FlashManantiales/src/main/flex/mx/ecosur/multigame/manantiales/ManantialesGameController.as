@@ -214,7 +214,8 @@ package mx.ecosur.multigame.manantiales
                         handleCheckConstraintTriggered (checkCondition);
                         break;
                     case ManantialesEvent.SUGGESTION_EVALUATED:
-                        suggestion = Suggestion(message.body);
+                        game = ManantialesGame(message.body[0]);
+                        suggestion = Suggestion(message.body[1]);
                         _suggestionHandler.addSuggestion (suggestion);
                         break;
                     case ManantialesEvent.SUGGESTION_APPLIED:
@@ -283,6 +284,9 @@ package mx.ecosur.multigame.manantiales
             if (_gameWindow.silvoStore != null)
                 _gameWindow.silvoStore.active = false;
             _isEnded = true;
+
+            var call:Object = _gameService.quitGame(_game, _currentPlayer);
+            call.operation = "quitGame";
         }
 
         public function initGrid(gameGrid:GameGrid):void {
@@ -432,7 +436,6 @@ package mx.ecosur.multigame.manantiales
                 _gameWindow.gameStatus.showMessage(resourceManager.getString("Manantiales",
                 "manantiales.wait.message"), Color.getColorCode(_currentPlayer.color));
             }
-
             _players = _game.players;
             _tokenHandler.update(_currentPlayer);
         }

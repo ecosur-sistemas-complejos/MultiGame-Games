@@ -26,7 +26,10 @@ public class ManantialesMessageSender extends MessageSender {
     private static final Logger logger = Logger.getLogger(ManantialesMessageSender.class.getCanonicalName());
 
     public void sendSuggestionEvaluated (ManantialesGame game, PuzzleSuggestion suggestion) {
-        sendMessage(game.getId(), GameEvent.SUGGESTION_EVALUATED, suggestion);
+        Object [] data = new Object[ 2 ];
+        data [ 0 ] = game;
+        data [ 1 ] = suggestion;
+        sendMessage(game.getId(), GameEvent.SUGGESTION_EVALUATED, data);
     }
 
     public void sendSuggestionApplied (ManantialesGame game, PuzzleSuggestion suggestion) {

@@ -34,7 +34,8 @@ package mx.ecosur.multigame.gente{
     import mx.ecosur.multigame.entity.GameGrid;
     import mx.ecosur.multigame.entity.GamePlayer;
     import mx.ecosur.multigame.entity.Move;
-    import mx.ecosur.multigame.gente.entity.StrategyPlayer;
+import mx.ecosur.multigame.enum.GameState;
+import mx.ecosur.multigame.gente.entity.StrategyPlayer;
     import mx.ecosur.multigame.gente.entity.GenteGame;
     import mx.ecosur.multigame.gente.entity.GentePlayer;
     import mx.ecosur.multigame.enum.Color;
@@ -278,6 +279,7 @@ package mx.ecosur.multigame.gente{
                 else
                     sound = SoundAssets.failure;
             }
+
             _gameStatus.showMessage(msg, 0x00000);
             _gameStatus.active = false;
             
@@ -310,8 +312,10 @@ package mx.ecosur.multigame.gente{
 
             _sndChannel = sound.play();
             _isEnded = true;
-            /* Message Controller to tear down message receiver (game is over) */
-            destroy()
+
+            /* Send the quit message */
+            var call:Object = _gameService.quitGame(_game, _currentPlayer);
+            call.operation = "quitGame";
         }
         
         /*
@@ -761,9 +765,11 @@ package mx.ecosur.multigame.gente{
         } 
         
         private function initTurn():void{
-            _executingMove = null;
-            _tokenStore.active = true;
-            _currentPlayer.play();
+            if (_game.state == GameState.PLAY) {
+                _executingMove = null;
+                _tokenStore.active = true;
+                _currentPlayer.play();
+            }
         }
         
         private function endTurn():void{

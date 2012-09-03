@@ -9,6 +9,7 @@
  * @author awaterma@ecosur.mx
  */
 
+import java.nio.channels.FileChannel;
 import java.util.*;
 
 import javax.jms.JMSException;
@@ -89,8 +90,6 @@ public class ManantialesRulesTest extends JMSTestCaseAdapter {
             }
         }
     }
-
-
         
     @Test
     public void testInitialize () {
@@ -1644,6 +1643,23 @@ public class ManantialesRulesTest extends JMSTestCaseAdapter {
         assertEquals(bob, incrementTurn(game,move));
     }
 
+    /**
+     * For bug: mg-127
+     */
+    @Test
+    public void testUpgradeZeroZero() throws InvalidMoveException {
+        ManantialesFicha ficha = new ManantialesFicha(0,0,alice.getColor(),TokenType.MODERATE_PASTURE);
+        ManantialesMove move = new ManantialesMove(alice,ficha);
+        game.move(move);
+        assertEquals(MoveStatus.EVALUATED, move.getStatus());
+        alice.setTurn(true);
+        ManantialesFicha ficha2 = new ManantialesFicha(0,0,alice.getColor(),TokenType.INTENSIVE_PASTURE);
+        move = new ManantialesMove(alice,ficha,ficha2);
+        game.move(move);
+        assertEquals(MoveStatus.EVALUATED, move.getStatus());
+        ManantialesFicha f = (ManantialesFicha) game.getGrid().getLocation(ficha);
+        assertTrue(f.getType().equals(TokenType.INTENSIVE_PASTURE));
+    }
     /**
     * @param borderType
     * @param grid

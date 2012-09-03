@@ -243,7 +243,7 @@ when
      $move  : ManantialesMove ($tok2 : destinationCell != null, status != MoveStatus.INVALID,
          type == TokenType.INTENSIVE_PASTURE)
      eval (isContiguous ($graph, $tok1, $tok2))
-    then 
+    then
         modify ($move) { setStatus (MoveStatus.INVALID) }
 end
 
@@ -450,7 +450,7 @@ rule "execute-replace-move"
 when 
     $game  : ManantialesGame (state == GameState.PLAY, $mode : mode)
     $move  : ManantialesMove (status == MoveStatus.VERIFIED, currentCell != null,
-    	destinationCell != null, swap != true, $player : player)
+        destinationCell != null, swap != true, $player : player)
     $current : ManantialesFicha (column == $move.currentCell.column, row == $move.currentCell.row)    
     eval (!isWinner ($game.getMode(), (ManantialesPlayer) $player))
     eval (!isSolved ($mode, $game))

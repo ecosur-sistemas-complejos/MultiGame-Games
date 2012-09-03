@@ -122,20 +122,18 @@ package mx.ecosur.multigame.manantiales {
 
                 // define target cell
                 var targetCell:BoardCell = BoardCell(evt.currentTarget);
+                if (targetCell.token.cell != null) {
+                    move.currentCell = Ficha (targetCell.token.cell);
+                }
 
                 /* Get source */
-                var sourceToken:ManantialesToken = ManantialesToken (evt.dragSource.dataForFormat("source"));
-
+                var sourceToken:ManantialesToken = ManantialesToken (targetCell.token);
                 if (sourceToken != null && sourceToken.cell != null) {
                     move.currentCell = sourceToken.cell;
                     var sourceCell:RoundCell = RoundCell (this._gameWindow.board.getBoardCell(
                             sourceToken.cell.column, sourceToken.cell.row));
                     sourceCell.token = new UndevelopedToken();
                     sourceCell.reset();
-                }
-
-                if (targetCell.token.cell != null) {
-                    move.currentCell = Ficha (targetCell.token.cell);
                 }
 
                 /* Set the destination information to match where the token was dragged to */

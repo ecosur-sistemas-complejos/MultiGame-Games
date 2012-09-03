@@ -101,11 +101,7 @@ package mx.ecosur.multigame.component {
         }
         
         public function getBoardCell(colNum:int, rowNum:int):BoardCell {
-            if (colNum < _boardCells.length && rowNum < _boardCells[colNum].length){
-                return BoardCell (_boardCells[colNum][rowNum]);
-            }else{
-                return null;
-            }
+            return BoardCell (_boardCells[colNum][rowNum]);
         }
         
         /* Public functions */

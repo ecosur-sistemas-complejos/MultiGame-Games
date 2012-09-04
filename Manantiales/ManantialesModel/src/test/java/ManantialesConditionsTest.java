@@ -1,7 +1,4 @@
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.TreeSet;
+import java.util.*;
 
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -16,11 +13,10 @@ import mx.ecosur.multigame.exception.InvalidMoveException;
 
 import mx.ecosur.multigame.grid.entity.GameGrid;
 import mx.ecosur.multigame.grid.entity.GridCell;
+import mx.ecosur.multigame.grid.entity.GridPlayer;
 import mx.ecosur.multigame.grid.entity.GridRegistrant;
-import mx.ecosur.multigame.manantiales.entity.ManantialesFicha;
-import mx.ecosur.multigame.manantiales.entity.ManantialesGame;
-import mx.ecosur.multigame.manantiales.entity.ManantialesMove;
-import mx.ecosur.multigame.manantiales.entity.ManantialesPlayer;
+import mx.ecosur.multigame.manantiales.entity.*;
+import mx.ecosur.multigame.manantiales.enums.ConditionType;
 import mx.ecosur.multigame.manantiales.enums.Mode;
 import mx.ecosur.multigame.manantiales.enums.TokenType;
 import mx.ecosur.multigame.model.interfaces.Move;
@@ -434,4 +430,70 @@ public class ManantialesConditionsTest extends JMSTestCaseAdapter {
         assertEquals(1, messages.size());
 
     }
+
+    @Test
+    public void testRelieveEastCheckConstraintsWithActiveManantialesConstraint() throws InvalidMoveException, JMSException {
+
+        /* Northern Constraint */
+        ManantialesFicha nFicha = new ManantialesFicha(4,3, alice.getColor(),
+                TokenType.MODERATE_PASTURE);
+        ManantialesFicha nFicha2 = new ManantialesFicha(4,1, charlie.getColor(),
+                TokenType.MODERATE_PASTURE);
+        ManantialesFicha nFicha3 = new ManantialesFicha(4,2, charlie.getColor(),
+                TokenType.MODERATE_PASTURE);
+
+        /* Manantials Constraint */
+        ManantialesFicha mFicha = new ManantialesFicha(4,5, bob.getColor(),
+                TokenType.MODERATE_PASTURE);
+            /* Trigger */
+        ManantialesFicha mFicha2 = new ManantialesFicha(3,4, charlie.getColor(),
+                TokenType.MODERATE_PASTURE);
+
+        SetIds(nFicha,nFicha2,nFicha3, mFicha, mFicha2);
+        move(nFicha, nFicha2, nFicha3, mFicha2);
+        List<Message>messages = filterForEvent(GameEvent.CONDITION_RAISED);
+        assertEquals(1,messages.size());
+
+        /* Trigger Manantiales condition */
+        stripTurns();
+        bob.setTurn(true);
+        ManantialesMove move = new ManantialesMove(bob, mFicha);
+        assertTrue(move.isManantial());
+        game.move(move);
+        assertEquals(MoveStatus.EVALUATED, move.getStatus());
+
+        messages= filterForEvent(GameEvent.CONDITION_TRIGGERED);
+        assertEquals(1, messages.size());
+
+        messages = filterForEvent(GameEvent.CONDITION_RAISED);
+        assertEquals(2, messages.size());
+
+        /* Check that expired Northern border constraint resolved Manantiales condition */
+        messages = filterForEvent(GameEvent.CONDITION_RESOLVED);
+        assertEquals(1, messages.size());
+    }
+
+    private void stripTurns() {
+        for (GridPlayer p : game.getPlayers()) {
+           p.setTurn(false);
+        }
+        game.setTurns(0);
+    }
+
+    private void move(ManantialesFicha... moves) throws InvalidMoveException {
+        for (ManantialesFicha f : moves) {
+            ManantialesPlayer player = null;
+            for (GridPlayer p : game.getPlayers()) {
+                if (p.getColor().equals(f.getColor())) {
+                    player = (ManantialesPlayer) p;
+                    break;
+                }
+            }
+            stripTurns();
+            player.setTurn(true);
+            ManantialesMove m = new ManantialesMove(player, f);
+            game.move(m);
+        }
+    }
+
 }

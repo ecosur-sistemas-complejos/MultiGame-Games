@@ -142,6 +142,19 @@ public class RuleFunctions {
         return ret;
     }
 
+    public static boolean resolvesCondition(CheckCondition existing, CheckCondition expired) {
+        System.out.println("Checking " + existing.getReason() + " against " + expired.getReason());
+        Set<ManantialesFicha> current = existing.getViolators();
+        for (ManantialesFicha f : expired.getViolators()) {
+            if (current.contains(f)) {
+                System.out.println("Resolved Condition!!");
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public static  boolean isWinner (Mode mode, ManantialesPlayer gamePlayer) {
         boolean ret = false;
         ManantialesPlayer player = (ManantialesPlayer) gamePlayer;

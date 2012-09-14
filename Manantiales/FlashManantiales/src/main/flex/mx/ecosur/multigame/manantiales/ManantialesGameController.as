@@ -333,8 +333,9 @@ package mx.ecosur.multigame.manantiales
                     token.ficha = ficha;
                     _gameWindow.board.addToken(token);
 
-                    if (puzzleMode)
+                    if (puzzleMode) {
                         _tokenHandler.addListeners (token);
+                    }
                 }
             }
         }

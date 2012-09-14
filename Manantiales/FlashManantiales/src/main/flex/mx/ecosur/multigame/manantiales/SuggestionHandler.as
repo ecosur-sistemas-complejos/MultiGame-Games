@@ -352,7 +352,8 @@ import mx.effects.AnimateProperty;
             {
                 var ds:DragSource = new DragSource();
                 ds.addData(token, "token");
-                
+                ds.addData(token.cell, "cell");
+
                 /* Set the previous token to Undeveloped */
                 var previous:ManantialesToken = ManantialesToken(evt.currentTarget);
 

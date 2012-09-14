@@ -2,12 +2,12 @@ package mx.ecosur.multigame.manantiales {
 
     import flash.events.MouseEvent;
     import mx.collections.ArrayCollection;
-    import mx.controls.Alert;
     import mx.core.DragSource;
     import mx.core.IFlexDisplayObject;
-    import mx.ecosur.multigame.component.BoardCell;
-    import mx.ecosur.multigame.enum.Color;
-    import mx.ecosur.multigame.enum.MoveStatus;
+import mx.ecosur.multigame.component.AbstractBoard;
+import mx.ecosur.multigame.component.BoardCell;
+import mx.ecosur.multigame.entity.Cell;
+import mx.ecosur.multigame.enum.MoveStatus;
     import mx.ecosur.multigame.manantiales.entity.Ficha;
     import mx.ecosur.multigame.manantiales.entity.ManantialesMove;
     import mx.ecosur.multigame.manantiales.entity.ManantialesPlayer;
@@ -97,7 +97,7 @@ package mx.ecosur.multigame.manantiales {
         }
 
         private function initializeTokenStore (tokenStore:ManantialesTokenStore):void {
-            tokenStore.startMoveHandler = startMove;
+            tokenStore.startMoveHandler = dragStart;
             tokenStore.endMoveHandler = endMove;
             tokenStore.visible = true;
             tokenStore.active = true;
@@ -113,6 +113,7 @@ package mx.ecosur.multigame.manantiales {
             {
                 // define destination
                 var destToken:ManantialesToken = ManantialesToken (evt.dragSource.dataForFormat("token"));
+                var destCell:Cell = Cell(evt.dragSource.dataForFormat("cell"));
                 var destination:Ficha = Ficha(destToken.ficha);
 
                 var move:ManantialesMove = new ManantialesMove();
@@ -130,10 +131,20 @@ package mx.ecosur.multigame.manantiales {
                 var sourceToken:ManantialesToken = ManantialesToken (targetCell.token);
                 if (sourceToken != null && sourceToken.cell != null) {
                     move.currentCell = sourceToken.cell;
-                    var sourceCell:RoundCell = RoundCell (this._gameWindow.board.getBoardCell(
-                            sourceToken.cell.column, sourceToken.cell.row));
-                    sourceCell.token = new UndevelopedToken();
-                    sourceCell.reset();
+                } else if (destination.color != _currentPlayer.color) {
+                   move.currentCell = destCell;
+                }
+
+                /* We only set the "current cell" to an Undeveloped token when it is not null,
+                   i.e., when an existing token is being moved or a suggestion for another player
+                   has been created.
+                 */
+                if (move.currentCell != null) {
+                    sourceToken  = new UndevelopedToken();
+                    var source:RoundCell = RoundCell(_gameWindow.board.getBoardCell(move.currentCell.column,
+                            move.currentCell.row));
+                    source.token = sourceToken;
+                    source.reset();
                 }
 
                 /* Set the destination information to match where the token was dragged to */
@@ -144,18 +155,15 @@ package mx.ecosur.multigame.manantiales {
                 move.mode = _mode;
 
                 /* TODO: This switch needs cleaning up, and is not currently accurate (if working) */
-                if (move.currentCell == null
-                        && (destToken.cell.color == _currentPlayer.color || destToken.cell.color == Color.UNKNOWN))
-                {
-                        /* Regular Move */
+                if (move.currentCell == null && destToken.cell.color == _currentPlayer.color) {
+                    /* Regular Move */
                     move.player = _currentPlayer;
                     decrementStore(Ficha (move.destinationCell));
 
                      _gameWindow.controller.sendMove(move);
 
-                } else if ((destToken.cell.color == _currentPlayer.color || destToken.cell.color == Color.UNKNOWN) &&
-                        move.currentCell != null)
-                {
+                } else if (destination.color == _currentPlayer.color && move.currentCell != null) {
+                    /* Replacement move */
                     decrementStore(Ficha (move.destinationCell));
                     if (move.currentCell instanceof Ficha)
                         incrementStore(Ficha (move.currentCell));
@@ -164,15 +172,13 @@ package mx.ecosur.multigame.manantiales {
                     move.player = _currentPlayer;
                     _gameWindow.controller.sendMove(move);
 
-                } else if (destToken.cell.color != _currentPlayer.color || destToken.cell.color == Color.UNKNOWN)
-                {
-                        /* Making a suggestion to another player */
+                } else if (destination.color != _currentPlayer.color) {
+                    /* Suggestion to another player */
                     suggestion = true;
                     move.player = null;
                     _suggestionHandler.makeSuggestion(move);
                 } else {
-                    Alert.show ("Unable to create move/suggestion.  destToken.cell=" + destToken.cell + ", " +
-                            "destToken.cell.color==" + destToken.cell.color);
+                    throw new Error ("ERROR! Unable to create move/suggestion!");
                 }
 
                 // animate
@@ -265,7 +271,7 @@ package mx.ecosur.multigame.manantiales {
             return _currentPlayer.turn;
         }
 
-        public function startMove(evt:MouseEvent):void {
+        public function dragStart(evt:MouseEvent):void {
             // initialize drag source
             var token:ManantialesToken = ManantialesToken(evt.currentTarget);
             var ds:DragSource = new DragSource();
@@ -305,7 +311,7 @@ package mx.ecosur.multigame.manantiales {
         public function addListeners (token:ManantialesToken):void {
             if (token.cell) {
                 if(token.cell.color == _currentPlayer.color){
-                     token.addEventListener(MouseEvent.MOUSE_DOWN, startMove);
+                     token.addEventListener(MouseEvent.MOUSE_DOWN, dragStart);
                      token.addEventListener(DragEvent.DRAG_COMPLETE, endMove);
                 }else{
                     token.addEventListener(MouseEvent.MOUSE_DOWN, _suggestionHandler.dispatch);

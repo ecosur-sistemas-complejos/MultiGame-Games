@@ -54,7 +54,7 @@ public class PuzzleSuggestion implements Suggestion {
         setMove ((ManantialesMove) move);
     }
 
-    @ManyToOne (cascade = CascadeType.ALL)
+    @ManyToOne (cascade = CascadeType.ALL, fetch=FetchType.EAGER)
     public ManantialesMove getMove() {
         return move;
     }

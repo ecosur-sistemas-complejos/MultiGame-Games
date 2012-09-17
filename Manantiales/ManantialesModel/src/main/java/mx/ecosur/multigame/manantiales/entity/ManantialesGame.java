@@ -464,9 +464,14 @@ public class ManantialesGame extends GridGame {
         session.fireAllRules();
         session.dispose();
 
-        if (getMoves() == null)
+        if (getMoves() == null) {
             setMoves(new TreeSet<GridMove>(new MoveComparator()));
-        getMoves().add(move);
+        }
+
+        if (!moves.contains(move)) {
+            getMoves().add(move);
+        }
+
         return move;
     }
 
@@ -490,9 +495,15 @@ public class ManantialesGame extends GridGame {
         for (Object fact : getFacts())
             session.insert(fact);
         Set<PuzzleSuggestion> set = getSuggestions();
-        if (set == null)
+
+        if (set == null) {
             set = new LinkedHashSet<PuzzleSuggestion>();
-        set.add((PuzzleSuggestion) suggestion);
+        }
+
+        if (!set.contains(suggestion)) {
+            set.add((PuzzleSuggestion) suggestion);
+        }
+
         setSuggestions(set);
         session.getAgenda().getAgendaGroup("verify").setFocus();
         session.fireAllRules();

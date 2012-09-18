@@ -23,18 +23,23 @@ import mx.ecosur.multigame.manantiales.entity.Suggestion;
             switch (destination.type) {
                 case TokenType.FOREST:
                     _label = "F";
+                    _type = TokenType.FOREST;
                    break;
                 case TokenType.INTENSIVE:
                     _label = "I";
+                    _type = TokenType.INTENSIVE;
                    break;
                 case TokenType.MODERATE:
                     _label = "M";
+                    _type = TokenType.MODERATE;
                    break;
                 case TokenType.SILVOPASTORAL:
                     _label = "S";
+                    _type = TokenType.SILVOPASTORAL;
                    break;
                 case TokenType.VIVERO:
                     _label = "V";
+                    _type = TokenType.VIVERO;
                    break;
                 default:
                    break;

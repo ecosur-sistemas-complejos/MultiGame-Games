@@ -1,11 +1,13 @@
 package mx.ecosur.multigame.manantiales.token {
+import mx.ecosur.multigame.manantiales.enum.TokenType;
 
-    public class UndevelopedToken extends ManantialesToken {
+public class UndevelopedToken extends ManantialesToken {
         
         private var _col:int,  _row:int;
     
         public function UndevelopedToken () {
             super ();
+            _type = TokenType.UNDEVELOPED;
         }
 
 

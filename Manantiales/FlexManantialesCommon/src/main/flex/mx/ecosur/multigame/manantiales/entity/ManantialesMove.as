@@ -11,7 +11,7 @@ package mx.ecosur.multigame.manantiales.entity {
 
         private var _mode:String;
         
-        private var _swap:Ficha;
+        private var _swap:Boolean;
 
         private var _type:String;
 
@@ -43,11 +43,11 @@ package mx.ecosur.multigame.manantiales.entity {
             _premium = value;
         }
 
-        public function get swap():Ficha {
+        public function get swap():Boolean {
             return _swap;
         }
         
-        public function set swap(swap:Ficha):void {
+        public function set swap(swap:Boolean):void {
             _swap = swap;
         }
 
@@ -84,8 +84,8 @@ package mx.ecosur.multigame.manantiales.entity {
         }
 
         public override function toString():String {
-            return super.toString() + ", badYear [" + _badYear + "], mode [ " + _mode.toString() + "]";
+            return "ManantialesMove [ current=" + currentCell + ", destination=" + destinationCell + ",swap=" + _swap +
+                ",mode=" + mode + ", type=" + type + ", replacementType=" + replacementType;
         }
-
     }
 }

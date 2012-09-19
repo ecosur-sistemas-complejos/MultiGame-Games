@@ -111,11 +111,14 @@ import mx.ecosur.multigame.enum.MoveStatus;
 
             if (evt.dragSource.hasFormat("token"))
             {
-                // define destination
-                var destToken:ManantialesToken = ManantialesToken (evt.dragSource.dataForFormat("token"));
-                var destCell:Cell = Cell(evt.dragSource.dataForFormat("cell"));
-                var destination:Ficha = Ficha(destToken.ficha);
+                var sourceToken:ManantialesToken = ManantialesToken (evt.dragSource.dataForFormat("token"));
+                var sourceCell:Cell = Cell(evt.dragSource.dataForFormat("cell"));
 
+                // define destination
+                var destination:Ficha = Ficha(sourceToken.ficha);
+
+
+                // define the move
                 var move:ManantialesMove = new ManantialesMove();
                 move.status = String (MoveStatus.UNVERIFIED);
                 move.mode = _mode;
@@ -127,39 +130,66 @@ import mx.ecosur.multigame.enum.MoveStatus;
                     move.currentCell = Ficha (targetCell.token.cell);
                 }
 
-                /* Get source */
-                var sourceToken:ManantialesToken = ManantialesToken (targetCell.token);
-                if (sourceToken != null && sourceToken.cell != null) {
-                    move.currentCell = sourceToken.cell;
-                } else if (destination.color != _currentPlayer.color) {
-                   move.currentCell = destCell;
-                }
-
-                /* We only set the "current cell" to an Undeveloped token when it is not null,
-                   i.e., when an existing token is being moved or a suggestion for another player
-                   has been created.
-                 */
-                if (move.currentCell != null) {
-                    sourceToken  = new UndevelopedToken();
-                    var source:RoundCell = RoundCell(_gameWindow.board.getBoardCell(move.currentCell.column,
-                            move.currentCell.row));
-                    source.token = sourceToken;
-                    source.reset();
+                /* Set the move's current cell based upon what token's located at the target */
+                var targetToken:ManantialesToken = ManantialesToken (targetCell.token);
+                if (sourceCell != null) {
+                    move.currentCell = sourceCell;
+                    /* No swaps, will add support later, if possible (we get duplicate primary key violation currently) */
+                    /*if (targetToken != null && targetToken.cell != null) {
+                        move.swap = true
+                    }*/
                 }
 
                 /* Set the destination information to match where the token was dragged to */
                 destination.row = targetCell.row;
                 destination.column = targetCell.column;
-                destination.type = destToken.ficha.type;
+                destination.type = sourceToken.ficha.type;
                 move.destinationCell = destination;
                 move.mode = _mode;
 
+                /* We only set the "current cell" to an Undeveloped token when it is not null,
+                   i.e., when an existing token is being moved or a suggestion for another player
+                   has been created.
+                 */
+                if (move.currentCell != null && !move.swap) {
+                    targetToken  = new UndevelopedToken();
+                    var source:RoundCell = RoundCell(_gameWindow.board.getBoardCell(move.currentCell.column,
+                            move.currentCell.row));
+                    source.token = targetToken;
+                    source.reset();
+                } else if (move.currentCell != null && move.swap) {
+                    switch (destination.type) {
+                        case TokenType.FOREST:
+                            targetToken = new ForestToken();
+                            break;
+                        case TokenType.INTENSIVE:
+                            targetToken = new IntensiveToken();
+                            break;
+                        case TokenType.MODERATE:
+                            targetToken = new ModerateToken();
+                            break;
+                        case TokenType.SILVOPASTORAL:
+                            targetToken = new SilvopastoralToken();
+                            break;
+                        case TokenType.VIVERO:
+                            targetToken = new ViveroToken();
+                            break;
+                        default:
+                            trace("Default in switch!!");
+                            trace("type: " + destination.type);
+                            targetToken = new UndevelopedToken();
+                    }
+                    var source:RoundCell = RoundCell(_gameWindow.board.getBoardCell(move.currentCell.column,
+                            move.currentCell.row));
+                    source.token = targetToken;
+                    source.reset();
+                }
+
                 /* TODO: This switch needs cleaning up, and is not currently accurate (if working) */
-                if (move.currentCell == null && destToken.cell.color == _currentPlayer.color) {
+                if (move.currentCell == null && sourceToken.cell.color == _currentPlayer.color) {
                     /* Regular Move */
                     move.player = _currentPlayer;
                     decrementStore(Ficha (move.destinationCell));
-
                      _gameWindow.controller.sendMove(move);
 
                 } else if (destination.color == _currentPlayer.color && move.currentCell != null) {
@@ -186,19 +216,19 @@ import mx.ecosur.multigame.enum.MoveStatus;
 
                 var newToken:ManantialesToken;
 
-                if (destToken is ForestToken) {
+                if (sourceToken is ForestToken) {
                     newToken = new ForestToken();
                 }
-                else if (destToken is IntensiveToken) {
+                else if (sourceToken is IntensiveToken) {
                     newToken = new IntensiveToken();
                 }
-                else if (destToken is ModerateToken) {
+                else if (sourceToken is ModerateToken) {
                     newToken = new ModerateToken();
                 }
-                else if (destToken is ViveroToken) {
+                else if (sourceToken is ViveroToken) {
                     newToken = new ViveroToken();
                 }
-                else if (destToken is SilvopastoralToken) {
+                else if (sourceToken is SilvopastoralToken) {
                     newToken = new SilvopastoralToken();
                 }
 
@@ -276,6 +306,8 @@ import mx.ecosur.multigame.enum.MoveStatus;
             var token:ManantialesToken = ManantialesToken(evt.currentTarget);
             var ds:DragSource = new DragSource();
             ds.addData(token, "token");
+            if (token.cell != null)
+                ds.addData(token.cell, "cell");
             // create proxy image and start drag
             var dragImage:IFlexDisplayObject = token.createDragImage();
             var previous:ManantialesToken = ManantialesToken(evt.currentTarget);

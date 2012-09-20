@@ -4,10 +4,9 @@ package mx.ecosur.multigame.manantiales {
     import mx.collections.ArrayCollection;
     import mx.core.DragSource;
     import mx.core.IFlexDisplayObject;
-import mx.ecosur.multigame.component.AbstractBoard;
-import mx.ecosur.multigame.component.BoardCell;
-import mx.ecosur.multigame.entity.Cell;
-import mx.ecosur.multigame.enum.MoveStatus;
+    import mx.ecosur.multigame.component.BoardCell;
+    import mx.ecosur.multigame.entity.Cell;
+    import mx.ecosur.multigame.enum.MoveStatus;
     import mx.ecosur.multigame.manantiales.entity.Ficha;
     import mx.ecosur.multigame.manantiales.entity.ManantialesMove;
     import mx.ecosur.multigame.manantiales.entity.ManantialesPlayer;

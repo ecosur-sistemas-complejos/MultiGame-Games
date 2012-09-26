@@ -116,7 +116,6 @@ package mx.ecosur.multigame.manantiales {
                 // define destination
                 var destination:Ficha = Ficha(sourceToken.ficha);
 
-
                 // define the move
                 var move:ManantialesMove = new ManantialesMove();
                 move.status = String (MoveStatus.UNVERIFIED);
@@ -127,17 +126,12 @@ package mx.ecosur.multigame.manantiales {
                 var targetCell:BoardCell = BoardCell(evt.currentTarget);
                 if (targetCell.token.cell != null) {
                     move.currentCell = Ficha (targetCell.token.cell);
+                } else if (sourceCell != null) {
+                    move.currentCell = sourceCell;
                 }
 
                 /* Set the move's current cell based upon what token's located at the target */
                 var targetToken:ManantialesToken = ManantialesToken (targetCell.token);
-                if (sourceCell != null) {
-                    move.currentCell = sourceCell;
-                    /* No swaps, will add support later, if possible (we get duplicate primary key violation currently) */
-                    /*if (targetToken != null && targetToken.cell != null) {
-                        move.swap = true
-                    }*/
-                }
 
                 /* Set the destination information to match where the token was dragged to */
                 destination.row = targetCell.row;
@@ -174,8 +168,6 @@ package mx.ecosur.multigame.manantiales {
                             targetToken = new ViveroToken();
                             break;
                         default:
-                            trace("Default in switch!!");
-                            trace("type: " + destination.type);
                             targetToken = new UndevelopedToken();
                     }
                     var source:RoundCell = RoundCell(_gameWindow.board.getBoardCell(move.currentCell.column,

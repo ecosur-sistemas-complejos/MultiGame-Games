@@ -229,6 +229,9 @@ public class RuleFunctions {
         return (next.equals(second));
     }
 
+    public static boolean isEmpty (GameGrid grid, ManantialesMove move) {
+        return (grid.getLocation ((GridCell) move.getDestinationCell()) == null);
+    }
 
     public static  GameGrid clearPlayer (ManantialesGame game, ManantialesPlayer player) {
         GameGrid grid = game.getGrid();

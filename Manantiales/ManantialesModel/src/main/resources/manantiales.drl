@@ -153,7 +153,21 @@ rule "evaluate-regular-move"
 when
     $game  : ManantialesGame (state == GameState.PLAY, $grid : grid, 
         mode not in (Mode.BASIC_PUZZLE, Mode.SILVO_PUZZLE))
-    $move  : ManantialesMove (badYear == false, status == MoveStatus.UNVERIFIED)
+    $move  : ManantialesMove (badYear == false, currentCell == null, 
+        destinationCell != null, status == MoveStatus.UNVERIFIED)
+    eval (isEmpty($grid, $move))
+    eval (isWithinTimeLimit($game, $move))
+then
+    modify ($move) { setStatus (MoveStatus.VERIFIED) }
+end
+
+rule "evaluate-replacement-move"
+    agenda-group "verify"
+when
+    $game  : ManantialesGame (state == GameState.PLAY, $grid : grid, 
+        mode not in (Mode.BASIC_PUZZLE, Mode.SILVO_PUZZLE))
+    $move  : ManantialesMove (currentCell != null, destinationCell != null, 
+        badYear == false, status == MoveStatus.UNVERIFIED)
     eval (isValidReplacement($game.getGrid(), $move))
     eval (isWithinTimeLimit($game, $move))
 then
@@ -463,25 +477,6 @@ then
     insert ((ManantialesFicha) cell);
     modify ($game) { setGrid (modifiedGrid) };
     modify ($move) { setStatus (MoveStatus.MOVED)};
-    messageSender.sendMoveComplete ($game, $move);
-end
-
-rule "execute-remove-move"
-    agenda-group "move"
-    lock-on-active
-when 
-    $game  : ManantialesGame (state == GameState.PLAY)
-    $move  : ManantialesMove (status == MoveStatus.VERIFIED, currentCell != null,
-        destinationCell == null)
-    $current : ManantialesFicha (column == $move.currentCell.column, row == $move.currentCell.row)
-then
-    GameGrid modifiedGrid = $game.getGrid();
-    GridCell cell = $move.getDestinationCell();
-    modifiedGrid.removeCell (cell);
-    retract ($current);
-    insert ((ManantialesFicha) cell);
-    modify ($game) { setGrid (modifiedGrid) };
-    modify ($move) { setStatus (MoveStatus.MOVED) };
     messageSender.sendMoveComplete ($game, $move);
 end
 

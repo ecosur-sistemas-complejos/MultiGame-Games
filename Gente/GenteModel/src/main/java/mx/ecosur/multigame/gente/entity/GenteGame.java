@@ -135,14 +135,10 @@ public class GenteGame extends GridGame {
                 throw new RuntimeException(e);
             }
         }
-        if (grid.isEmpty())
-            grid.setCells(new TreeSet<GridCell>(new CellComparator()));
-
         StatefulKnowledgeSession session = kbase.newStatefulKnowledgeSession();
         session.setGlobal("messageSender", getMessageSender());
         session.insert(this);
         session.insert(move);
-
         session.getAgenda().getAgendaGroup("verify").setFocus();
         session.fireAllRules();
         session.getAgenda().getAgendaGroup("move").setFocus();
@@ -155,7 +151,6 @@ public class GenteGame extends GridGame {
         Set<GridMove> moves = getMoves();
         moves.add((GridMove) move);
         setMoves(moves);
-
         return move;
     }
 

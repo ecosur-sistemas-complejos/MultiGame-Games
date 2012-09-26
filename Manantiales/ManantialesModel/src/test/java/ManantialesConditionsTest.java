@@ -300,7 +300,7 @@ public class ManantialesConditionsTest extends JMSTestCaseAdapter {
         SetIds(contig1, contig2);
         GameGrid grid = game.getGrid();
         if (grid.isEmpty())
-            grid.setCells(new TreeSet<GridCell>());
+            grid.setCells(new HashSet<GridCell>());
         game.getGrid().getCells().add(contig1);
         ManantialesMove move = new ManantialesMove (alice, contig2);
         game.move (move);
@@ -320,7 +320,7 @@ public class ManantialesConditionsTest extends JMSTestCaseAdapter {
         SetIds(contig1, contig2);
         GameGrid grid = game.getGrid();
         if (grid.isEmpty())
-            grid.setCells(new TreeSet<GridCell>());
+            grid.setCells(new HashSet<GridCell>());
         game.getGrid().getCells().add(contig1);
         ManantialesMove move = new ManantialesMove (alice, contig2);
         game.move (move);
@@ -351,7 +351,7 @@ public class ManantialesConditionsTest extends JMSTestCaseAdapter {
         SetIds(contig1, contig2);
         GameGrid grid = game.getGrid();
         if (grid.isEmpty())
-            grid.setCells(new TreeSet<GridCell>());
+            grid.setCells(new HashSet<GridCell>());
         game.getGrid().getCells().add(contig1);
         ManantialesMove move = new ManantialesMove (alice, contig2);
         game.move (move);
@@ -381,7 +381,7 @@ public class ManantialesConditionsTest extends JMSTestCaseAdapter {
         SetIds(contig1, contig2);
         GameGrid grid = game.getGrid();
         if (grid.isEmpty())
-            grid.setCells(new TreeSet<GridCell>());
+            grid.setCells(new HashSet<GridCell>());
         game.getGrid().getCells().add(contig1);
         ManantialesMove move = new ManantialesMove (alice, contig2);
         game.move (move);
@@ -411,7 +411,7 @@ public class ManantialesConditionsTest extends JMSTestCaseAdapter {
         SetIds(contig1, contig2);
         GameGrid grid = game.getGrid();
         if (grid.isEmpty())
-            grid.setCells(new TreeSet<GridCell>());
+            grid.setCells(new HashSet<GridCell>());
         game.getGrid().getCells().add(contig1);
         ManantialesMove move = new ManantialesMove (alice, contig2);
         game.move (move);

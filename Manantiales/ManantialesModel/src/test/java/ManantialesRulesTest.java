@@ -792,7 +792,7 @@ public class ManantialesRulesTest extends JMSTestCaseAdapter {
         alice.setTurn (true);
 
 
-        move = new ManantialesMove (alice, resolve);
+        move = new ManantialesMove (alice, man1, resolve);
         game.move (move);
 
         assertEquals (MoveStatus.EVALUATED, move.getStatus());
@@ -839,7 +839,7 @@ public class ManantialesRulesTest extends JMSTestCaseAdapter {
         alice.setTurn (true);
 
 
-        move = new ManantialesMove (alice, resolve);
+        move = new ManantialesMove (alice, man1, resolve);
         game.move (move);
 
         assertEquals (MoveStatus.EVALUATED, move.getStatus());

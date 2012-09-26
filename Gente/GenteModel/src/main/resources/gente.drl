@@ -208,8 +208,9 @@ rule "find-the-winner"
     no-loop true
     salience -15
 when
-    game  : GenteGame (state == GameState.PLAY, winners.size >0)
+    game  : GenteGame (state == GameState.PLAY, $winners : winners)
     move  : GenteMove (status == MoveStatus.EVALUATED)
+    eval($winners.size() > 0)
 then
     modify (game) { setState (GameState.ENDED) }
     messageSender.sendEndGame (game);

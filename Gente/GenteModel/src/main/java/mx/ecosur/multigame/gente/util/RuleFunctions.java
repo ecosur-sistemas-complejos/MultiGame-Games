@@ -61,31 +61,30 @@ public class RuleFunctions {
     }
 
     public static GridPlayer incrementTurn (GenteGame game, GenteMove move) {
-
-        /* Find next player */
-        Set<GridPlayer> players = game.getPlayers();
-        GridPlayer [] gps = players.toArray(new GridPlayer[players.size()]);
-        int playerNumber = -1;
-
-        for (int i = 0; i < gps.length; i++) {
-            gps[i].setTurn(false);
-            if (gps [ i ].getId() == move.getPlayer().getId()) {
-                playerNumber = i;
+        Collection<GridPlayer> unsorted = game.getPlayers();
+        ArrayList<GridPlayer> sorted = new ArrayList<GridPlayer>(unsorted);
+        Collections.sort(sorted);
+        int counter = 0;
+        GridPlayer current = null;
+        for (GridPlayer p : sorted) {
+            if (p.isTurn()) {
+                current = p;
+                break;
+            } else {
+                counter++;
             }
         }
 
-        if (playerNumber == -1)
-            throw new RuntimeException ("Unable to find player: " + move.getPlayer() + " in set " + Arrays.toString(gps));
-
-        GridPlayer nextPlayer = null;
-        if (playerNumber == gps.length - 1) {
-            nextPlayer = gps [ 0 ];
+        GridPlayer next = null;
+        if (counter < sorted.size() - 1) {
+            next = sorted.get(counter + 1);
         } else {
-            nextPlayer = gps [playerNumber + 1];
+            next = sorted.get(0);
         }
 
-        nextPlayer.setTurn (true);
-        return nextPlayer;
+        current.setTurn(false);
+        next.setTurn(true);
+        return next;
     }
 
     public static boolean hasTria (GentePlayer player, BeadString test) {

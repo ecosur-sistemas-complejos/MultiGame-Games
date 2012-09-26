@@ -11,14 +11,19 @@
 
 import mx.ecosur.multigame.enums.GameState;
 import mx.ecosur.multigame.enums.MoveStatus;
+import mx.ecosur.multigame.exception.InvalidMoveException;
+import mx.ecosur.multigame.exception.InvalidRegistrationException;
 import mx.ecosur.multigame.gente.entity.GenteGame;
+import mx.ecosur.multigame.gente.entity.GenteMove;
 import mx.ecosur.multigame.gente.entity.GenteStrategyAgent;
 import mx.ecosur.multigame.gente.enums.GenteStrategy;
 import mx.ecosur.multigame.grid.Color;
 import mx.ecosur.multigame.grid.DummyMessageSender;
+import mx.ecosur.multigame.grid.entity.GridCell;
 import mx.ecosur.multigame.grid.entity.GridPlayer;
 import mx.ecosur.multigame.grid.entity.GridRegistrant;
 import mx.ecosur.multigame.model.interfaces.Move;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -69,7 +74,7 @@ public class GenteAgentTest extends GenteTestBase {
 
         while (game.getState().equals(GameState.PLAY) && counter < Ticks) {
             for (GridPlayer player : game.getPlayers()) {
-                if (player.isTurn()) {
+                if (player.isTurn() && game.getState().equals(GameState.PLAY)) {
                     GenteStrategyAgent agent = (GenteStrategyAgent) player;
                     List<Move> moves = agent.determineMoves(game);
                     if (moves.size() > 0) {
@@ -98,9 +103,8 @@ public class GenteAgentTest extends GenteTestBase {
         game.registerAgent(denise);
 
         while (game.getState().equals(GameState.PLAY) && counter < Ticks) {
-            boolean moved = false;
             for (GridPlayer player : game.getPlayers()) {
-                if (player.isTurn()) {
+                if (player.isTurn() && game.getState().equals(GameState.PLAY)) {
                     GenteStrategyAgent agent = (GenteStrategyAgent) player;
                     List<Move> moves = agent.determineMoves(game);
                     if (moves.size() > 0) {
@@ -113,6 +117,45 @@ public class GenteAgentTest extends GenteTestBase {
                  }
             }
             counter++;
+        }
+    }
+
+    /**
+     * Tests the default scenario for play, e.g. a regular user versus
+     * 3 agents.
+     */
+    @Test
+    public void testAgentScenario() throws InvalidRegistrationException, InvalidMoveException {
+        bob = new GenteStrategyAgent (b, Color.BLUE, GenteStrategy.RANDOM);
+        charlie = new GenteStrategyAgent (c, Color.RED, GenteStrategy.RANDOM);
+        denise = new GenteStrategyAgent (d, Color.GREEN, GenteStrategy.RANDOM);
+
+        GridPlayer alice = (GridPlayer) game.registerPlayer(a);
+        game.registerAgent(bob);
+        game.registerAgent(charlie);
+        game.registerAgent(denise);
+
+        int row = game.getRows() / 2;
+        int col = game.getColumns() / 2;
+        GridCell center = new GridCell (row, col, alice.getColor());
+        GenteMove move = new GenteMove (alice, center);
+        game.move (move);
+        assertEquals (MoveStatus.EVALUATED, move.getStatus());
+        assertEquals (center, game.getGrid().getLocation(center));
+
+        for (GridPlayer player : game.getPlayers()) {
+            System.out.println("Player: " + player);
+            if (player.isTurn() && game.getState().equals(GameState.PLAY)) {
+                GenteStrategyAgent agent = (GenteStrategyAgent) player;
+                List<Move> moves = agent.determineMoves(game);
+                if (moves.size() > 0) {
+                    move = (GenteMove) moves.iterator().next();
+                    game.move(move);
+                    assertEquals (MoveStatus.EVALUATED, move.getStatus());
+                } else {
+                    throw new RuntimeException ("No moves!");
+                }
+            }
         }
     }
 }

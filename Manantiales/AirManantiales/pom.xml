@@ -135,6 +135,9 @@
                     <argument>classes/descriptor.xml</argument>
                     <argument>${project.build.finalName}.swf</argument>
                     <argument>-platformsdk ${platformsdk}</argument>
+                    <argument>icons/Manantiales_29.png</argument>
+                    <argument>icons/Manantiales_57.png</argument>
+                    <argument>icons/Manantiales_512.png</argument>
                 </arguments>
               </configuration>
         </plugin>

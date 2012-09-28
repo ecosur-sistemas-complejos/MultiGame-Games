@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <application xmlns="http://ns.adobe.com/air/application/3.1">
     <id>mx.ecosur.mobile.ipad2.manantiales</id>
-    <filename>Manantiales de La Sierra</filename>
+    <filename>Manantiales</filename>
     <name>Manantiales de la Sierra</name>
     <description>An air (and iOS 5.1 ready) version of Manantiales de La Sierra</description>
     <copyright>ECOSUR 2012</copyright>

@@ -308,14 +308,13 @@ public class Controller {
         /* If there is a 'replacementType', the moved replaced a token with a known value */
         if (move.replacementType != null) {
             replacedToken = createToken(move.replacementType);
-            var f:Ficha = new Ficha();
-            f.column = move.currentCell.column;
-            f.row = move.currentCell.row;
-            f.color = move.currentCell.color;
+            var f:Ficha = Ficha(move.currentCell)
             replacedToken.ficha = f;
         } else {
             /* otherwise, this move replaced a UNDEVELOPED token */
             replacedToken = createToken(TokenType.UNDEVELOPED);
+            UndevelopedToken(replacedToken).row = move.destinationCell.row;
+            UndevelopedToken(replacedToken).col = move.destinationCell.column;
             if (rc.row == 4 || rc.column == 4) {
                 /* Reset border cells to neutral color */
                 rc.setStyle("cellBgColor", 0xA0A0A0);
@@ -349,7 +348,9 @@ public class Controller {
     public function panHandler(event:TransformGestureEvent):void {
         _view.board.x += event.offsetX;
         _view.board.y += event.offsetY;
-    }    internal function tapHandler(event:Event):void {
+    }
+
+    internal function tapHandler(event:Event):void {
         var dest:Point = new Point();
         var targ:ManantialesToken = ManantialesToken(event.currentTarget);
         var type:Object = _view.tokenTypes.getItemAt(_view.tokenType.selectedIndex);

@@ -64,7 +64,7 @@
                             resourceManager.getString ("Manantiales", constraint.reason) + "'!";
                 }else {
                     this.indicator.source=thumbsUp;
-                    this.reason.text = resourceManager.getString("Manantiales", "manantiales.check.triggered") + " '" +
+                    this.reason.text = resourceManager.getString("Manantiales", "manantiales.check.relieved") + " '" +
                             resourceManager.getString ("Manantiales", constraint.reason) + "'!";
                 }
             }            
